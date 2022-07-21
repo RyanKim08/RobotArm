@@ -223,10 +223,18 @@ window.onload = function init() {
 
             if (event.keyCode == 38) {   // Up
                 radius *= 0.9;
+                left *= 0.9;
+                right *= 0.9;
+                ytop *= 0.9;
+                bottom *= 0.9;
             }
 
             if (event.keyCode == 40) {   // Down
                 radius *= 1.1;
+                left *= 1.1;
+                right *= 1.1;
+                ytop *= 1.1;
+                bottom *= 1.1;
             }
 
         }, false);
