@@ -22,39 +22,28 @@
         precision mediump float;
 
         varying vec4 fColor;
+        uniform vec4 drawColor;
 
         void main()
         {
-            gl_FragColor = fColor;
+            gl_FragColor = drawColor;
         }
     </script>
 
     <script type="text/javascript" src="Common/webgl-utils.js"></script>
     <script type="text/javascript" src="Common/initShaders.js"></script>
     <script type="text/javascript" src="Common/MV.js"></script>
-    <script type="text/javascript" src="MoveArm2.js"></script>
+    <script type="text/javascript" src="RobotArm.js"></script>
 </head>
 
 <body>
-    <div>
-        body angle -180 <input id="slider1" type="range"
-                               min="-180" max="180" step="10" value="0" />
-        180
-    </div>
+    
     <br />
 
-    <div>
-        lower arm angle -180 <input id="slider2" type="range"
-                                    min="-180" max="180" step="10" value="0" />
-        180
-    </div>
+    
     <br />
 
-    <div>
-        upper arm angle -180 <input id="slider3" type="range"
-                                    min="-180" max="180" step="10" value="0" />
-        180
-    </div>
+    
     <br />
 
     <canvas id="gl-canvas" width="512" height="512">

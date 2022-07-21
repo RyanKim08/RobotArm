@@ -56,7 +56,47 @@ var modelViewMatrixLoc;
 
 var vBuffer, cBuffer;
 
+const ARM1_HEIGHT = 2.5;
+const ARM1_WIDTH = 1.5;
+const ARM2_HEIGHT = 2.5;
+const ARM2_WIDTH = 1.5;
+const ARM3_HEIGHT = 2.5;
+const ARM3_WIDTH = 1.5;
+const ARM4_HEIGHT = 2.5;
+const ARM4_WIDTH1 = 0.5;
+const ARM4_WIDTH2 = 1.7;
 
+const redColor = vec4(1, 0, 0, 1);
+const blueColor = vec4(0, 1, 0, 1);
+const greenColor = vec4(0, 0, 1, 1);
+const yellowColor = vec4(1, 1, 0, 1);
+var drawColorLoc;
+
+const arm1Theta = 0;
+const arm2Theta = 1;
+const arm3Theta = 2;
+var arm4Scale = 1;
+
+var yOff = 0.0;
+var xOff = 0.0;
+
+var isOrtho = true;
+var fovy = 140;
+var up = vec3(0.0, 1.0, 0.0);
+var at = vec3(0.0, 0.0, 0.0);
+var eye = vec3(0.0, 0.0, 0.0);
+
+var near = 0.1;
+var far = 40;
+var left = -10;
+var right = 10;
+var ytop = 10;
+var bottom = -10;
+var radius = 4;
+
+var projectionLoc;
+var cameraMode = false;
+var phi = 0;
 
 window.onload = function init() {
 
@@ -104,23 +144,92 @@ window.onload = function init() {
     modelViewMatrixLoc = gl.getUniformLocation(program, "modelViewMatrix");
 
     projectionMatrix = ortho(-10, 10, -10, 10, -10, 10);
-    var projectionLoc = gl.getUniformLocation(program, "projectionMatrix");
+    projectionLoc = gl.getUniformLocation(program, "projectionMatrix");
     gl.uniformMatrix4fv(projectionLoc, false, flatten(projectionMatrix));
 
-    document.getElementById("slider1").oninput =
-        function (event) {
-            theta[Base] = event.target.value;
-        };
+    drawColorLoc = gl.getUniformLocation(program, "drawColor");
 
-    document.getElementById("slider2").oninput =
+    document.addEventListener("keydown",
         function (event) {
-            theta[LowerArm] = event.target.value;
-        };
+            if (event.keyCode == 81) {   // Q
+                theta[arm1Theta] += 5;
+            }
+            if (event.keyCode == 87) {   // W
+                theta[arm1Theta] -= 5;
+            }
 
-    document.getElementById("slider3").oninput =
-        function (event) {
-            theta[UpperArm] = event.target.value;
-        };
+            if (event.keyCode == 65) {   // A
+                if (theta[arm2Theta] < 45) 
+                    theta[arm2Theta] += 5
+            }
+            if (event.keyCode == 83) {   // S
+                if (theta[arm2Theta] > -45)
+                    theta[arm2Theta] -= 5
+            }
+
+            if (event.keyCode == 88) {   // Z
+                if (theta[arm3Theta] < 45)
+                    theta[arm3Theta] += 5
+            }
+            if (event.keyCode == 90) {   // X
+                if (theta[arm3Theta] > -45)
+                    theta[arm3Theta] -= 5
+            }
+
+            if (event.keyCode == 69) {   // E
+                if (yOff < 10)
+                    yOff += 0.1;
+            }
+            if (event.keyCode == 68) {   // D
+                if (yOff > -10)
+                    yOff -= 0.1;
+            }
+
+            if (event.keyCode == 82) {   // R
+                if (xOff < 10)
+                    xOff += 0.1;
+            }
+            if (event.keyCode == 84) {   // T
+                if (xOff > -10)
+                    xOff -= 0.1;
+            }
+
+            if (event.keyCode == 72) {   // H
+                if (arm4Scale == 1)
+                    arm4Scale = 10;
+                else
+                    arm4Scale = 1;
+            }
+
+            if (event.keyCode == 80) {   // P
+                isOrtho = !isOrtho;
+            }
+
+            if (event.keyCode == 77) {   // M
+                cameraMode = !cameraMode;
+                if (cameraMode)
+                    phi = Math.PI / 2;
+                else
+                    phi = 0;
+            }
+
+            if (event.keyCode == 37) {   // Left
+                angle -= 0.1;
+            }
+
+            if (event.keyCode == 39) {   // Right
+                angle += 0.1;
+            }
+
+            if (event.keyCode == 38) {   // Up
+                radius *= 0.9;
+            }
+
+            if (event.keyCode == 40) {   // Down
+                radius *= 1.1;
+            }
+
+        }, false);
 
     render();
 }
@@ -149,27 +258,33 @@ function colorCube() {
     quad(5, 4, 0, 1);
 }
 
-function base() {
-    var s = scalem(BASE_WIDTH, BASE_HEIGHT, BASE_WIDTH);
-    var instanceMatrix = mult(translate(0.0, 0.5 * BASE_HEIGHT, 0.0), s);
+function arm1() {
+    var s = scalem(ARM1_WIDTH, ARM1_HEIGHT, ARM1_WIDTH);
+    var instanceMatrix = mult(translate(0.0, 0.5 * -ARM1_HEIGHT, 0.0), s);
     var t = mult(modelViewMatrix, instanceMatrix);
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(t));
     gl.drawArrays(gl.TRIANGLES, 0, NumVertices);
 }
 
-
-function upperArm() {
-    var s = scalem(UPPER_ARM_WIDTH, UPPER_ARM_HEIGHT, UPPER_ARM_WIDTH);
-    var instanceMatrix = mult(translate(0.0, 0.5 * UPPER_ARM_HEIGHT, 0.0), s);
+function arm2() {
+    var s = scalem(ARM2_WIDTH, ARM2_HEIGHT, ARM2_WIDTH);
+    var instanceMatrix = mult(translate(0.0, 0.5 * -ARM2_HEIGHT, 0.0), s);
     var t = mult(modelViewMatrix, instanceMatrix);
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(t));
     gl.drawArrays(gl.TRIANGLES, 0, NumVertices);
 }
 
+function arm3() {
+    var s = scalem(ARM3_WIDTH, ARM3_HEIGHT, ARM3_WIDTH);
+    var instanceMatrix = mult(translate(0.0, 0.5 * -ARM3_HEIGHT, 0.0), s);
+    var t = mult(modelViewMatrix, instanceMatrix);
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(t));
+    gl.drawArrays(gl.TRIANGLES, 0, NumVertices);
+}
 
-function lowerArm() {
-    var s = scalem(LOWER_ARM_WIDTH, LOWER_ARM_HEIGHT, LOWER_ARM_WIDTH);
-    var instanceMatrix = mult(translate(0.0, 0.5 * LOWER_ARM_HEIGHT, 0.0), s);
+function arm4() {
+    var s = scalem(ARM4_WIDTH1, ARM4_HEIGHT, ARM4_WIDTH2);
+    var instanceMatrix = mult(translate(0.0, 0.5 * -ARM4_HEIGHT, 0.0), s);
     var t = mult(modelViewMatrix, instanceMatrix);
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(t));
     gl.drawArrays(gl.TRIANGLES, 0, NumVertices);
@@ -177,19 +292,41 @@ function lowerArm() {
 
 
 function render() {
-
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    modelViewMatrix = rotate(theta[Base], 0, 1, 0);
-    base();
+    eye = vec3(radius * Math.sin(angle) * Math.cos(phi),
+        radius * Math.sin(phi),
+        radius * Math.cos(angle) * Math.cos(phi));
 
-    modelViewMatrix = mult(modelViewMatrix, translate(0.0, BASE_HEIGHT, 0.0));
-    modelViewMatrix = mult(modelViewMatrix, rotate(theta[LowerArm], 0, 0, 1));
-    lowerArm();
+    if (isOrtho) {
+        projectionMatrix = ortho(left, right, bottom, ytop, near, far);
+    } else {
+        projectionMatrix = perspective(fovy, 1.0, near, far);
+    }
 
-    modelViewMatrix = mult(modelViewMatrix, translate(0.0, LOWER_ARM_HEIGHT, 0.0));
-    modelViewMatrix = mult(modelViewMatrix, rotate(theta[UpperArm], 0, 0, 1));
-    upperArm();
+    gl.uniformMatrix4fv(projectionLoc, false, flatten(projectionMatrix));
+
+    modelViewMatrix = lookAt(eye, at, up);
+
+    gl.uniform4fv(drawColorLoc, redColor);
+    modelViewMatrix = mult(modelViewMatrix, translate(xOff, yOff, 0.0));
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[arm1Theta], 0, 0, 1));
+    arm1();
+
+    gl.uniform4fv(drawColorLoc, greenColor);
+    modelViewMatrix = mult(modelViewMatrix, translate(0.0, -ARM1_HEIGHT, 0.0));
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[arm2Theta], 0, 0, 1));
+    arm2();
+
+    gl.uniform4fv(drawColorLoc, blueColor);
+    modelViewMatrix = mult(modelViewMatrix, translate(0.0, -ARM2_HEIGHT, 0.0));
+    modelViewMatrix = mult(modelViewMatrix, rotate(theta[arm3Theta], 0, 0, 1));
+    arm3();
+
+    gl.uniform4fv(drawColorLoc, yellowColor);
+    modelViewMatrix = mult(modelViewMatrix, translate(0.0, -ARM3_HEIGHT / 2, 0.0));
+    modelViewMatrix = mult(modelViewMatrix, scalem(arm4Scale, 1, 1));
+    arm4();
 
     requestAnimFrame(render);
 }
